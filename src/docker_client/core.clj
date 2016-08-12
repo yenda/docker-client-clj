@@ -3,12 +3,18 @@
             [clojure.java.io :as io]
             [docker-client.support.rest :as rest]
             [docker-client.support.security :as security]
-            [docker-client.support.urish :refer [urish] :as urish]))
+            [docker-client.support.urish :refer [urish] :as urish]
+            [slingshot.slingshot :refer [throw+]]))
+
+(defn getenv
+  [var]
+  (or (System/getenv var)
+      (throw+  (Exception. (str "Env variable " var " for Docker is not set")))))
 
 (def env
-  {:docker-host (System/getenv "DOCKER_HOST")
-   :docker-cert-path (System/getenv "DOCKER_CERT_PATH")
-   :docker-tls-verify (System/getenv "DOCKER_TLS_VERIFY")})
+    {:docker-host (getenv "DOCKER_HOST")
+     :docker-cert-path (getenv "DOCKER_CERT_PATH")
+     :docker-tls-verify (getenv "DOCKER_TLS_VERIFY")})
 
 (def routes
   ["/"
