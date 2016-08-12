@@ -1,6 +1,5 @@
 (ns docker-client.core-test
   (:require [clojure.java.io :as io]
-            [clojure.data.json :as json]
             [clojure.test :refer :all]
             [clj-http.core]
             [clj-http.fake :refer :all]
@@ -30,27 +29,24 @@
 (deftest client-override-environment
   (testing "client override uri"
     (with-redefs [env test-https-env]
-      (is (-> {:uri "http://anotherhost:1236"}
-              client
-              :uri
-              :scheme
-              (= "http")))))
+      (is (= "http" (-> {:uri "http://anotherhost:1236"}
+                        client
+                        :uri
+                        :scheme)))))
   (testing "client override options"
     (with-redefs [env test-http-env]
-      (is (-> {:options {:keystore-pass "abc123"}}
-              client
-              :options
-              :keystore-pass
-              (= "abc123"))))))
+      (is (= "abc123" (-> {:options {:keystore-pass "abc123"}}
+                          client
+                          :options
+                          :keystore-pass))))))
 
 (deftest inspect-container-keyword-keys
   (testing "inspect-container"
     (with-fake-routes
       {"http://testhost:1234/containers/12345/json"
        (fn [_] {:status 200
-                :body (json/write-str {"Id" "12345"})})}
-      (is (-> {:uri "http://testhost:1234"}
-              client
-              (inspect-container "12345")
-              :id
-              (= "12345"))))))
+                :body "{\"Id\": \"12345\"}"})}
+      (is (= "12345" (-> {:uri "http://testhost:1234"}
+                         client
+                         (inspect-container "12345")
+                         :id))))))
